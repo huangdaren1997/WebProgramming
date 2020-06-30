@@ -1,4 +1,4 @@
-package com.hdr.server.netty.server;
+package com.hdr.netty.server;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -9,18 +9,24 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 public class TimeServerHandler extends ChannelInboundHandlerAdapter {
+
+    private int count = 0;
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg;
-        byte[] req = new byte[buf.readableBytes()];
-        buf.readBytes(req);
-        String body = new String(req, StandardCharsets.UTF_8);
-        System.out.println("the time server receive order : " + body);
+        String body = (String) msg;
+
+        System.out.println("the time server receive order : " + body +
+                " ; the counter is : "+ ++count);
+
         String curTime = "query time order".equalsIgnoreCase(body) ?
                 LocalDateTime.now().toString()
                 : "bad order";
+
+        curTime += System.getProperty("line.separator");
+
         ByteBuf resp = Unpooled.copiedBuffer(curTime.getBytes());
-        ctx.write(resp);
+        ctx.writeAndFlush(resp);
     }
 
     @Override
